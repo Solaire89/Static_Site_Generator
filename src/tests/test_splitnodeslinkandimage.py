@@ -1,13 +1,11 @@
 import unittest
 import sys
 import os
-import re
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from splitnodesimage import split_nodes_image
 from splitnodeslink import split_nodes_link
 from textnode import TextType, TextNode
-from extractmarkdown import extract_markdown_images
 
 class TestSplitImagesAndLinks(unittest.TestCase):
     def test_split_single_image(self):
