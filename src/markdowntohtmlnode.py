@@ -70,11 +70,29 @@ def create_list_block(block, ordered=False):
 
         li_node = HTMLNode("li", children=[HTMLNode("text", content)])
         li_nodes.append(li_node)
+
     # We're taking care of the logic of whether a list is ordered or 
     # unordered in the main markdown_to_HTML_node function.
     parent_tag = "ol" if ordered else "ul"
     list_node = HTMLNode(parent_tag, children=li_nodes)
     return list_node
+
+def create_quote_block(block):
+
+    processed_lines = []
+    # Iterating over the lines in the block
+    for line in block.split("\n"):
+        if line.startswith(">"):
+            # Remove ">" and strip whitespace
+            processed_line = line[1:].strip()
+        else:
+            processed_line = line
+        processed_lines.append(processed_line)
+        
+    content = "\n".join(processed_lines)
+
+    return content
+
 
 # ----- Inline Text Processing Functions -----
 def text_to_children(text):
