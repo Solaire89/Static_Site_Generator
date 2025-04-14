@@ -81,7 +81,7 @@ def create_quote_block(block):
 
     processed_lines = []
     # Iterating over the lines in the block
-    for line in block.split("\n"):
+    for line in block.split("\n"): # Splitting the lines by the \n character
         if line.startswith(">"):
             # Remove ">" and strip whitespace
             processed_line = line[1:].strip()
@@ -91,7 +91,11 @@ def create_quote_block(block):
         
     content = "\n".join(processed_lines)
 
-    return content
+    # Process inline markdown
+    children = text_to_children(content)
+    
+    # Create the blockquote node
+    return HTMLNode("blockquote", None, children, None)
 
 
 # ----- Inline Text Processing Functions -----
@@ -123,7 +127,7 @@ def markdown_to_html_node(markdown):
     # Extract the blocks from the markdown
     blocks = markdown_to_blocks(markdown)
     
-    parent = HTMLNode("div", None, None, [])
+    parent_node = HTMLNode("div", None, None, [])
     # Loop through each block to create HTML nodes
     for block in blocks:
         # Establishing what type of block each blocks are
@@ -133,12 +137,17 @@ def markdown_to_html_node(markdown):
         # For example:
         if block_type == "paragraph":
             block_node = create_paragraph_node(block)
-            
-        if block_type == "code":
-            # For a code block
+        elif block_type == "code":
             block_node = create_code_block(block)
-        
+        elif block_type == "quote":
+            block_node = create_quote_block(block)
+        elif block_type == "unordered_list":
+            list_node = create_list_block(block, ordered=False)
+            parent_node.children.append(list_node)
+        elif block_type == "ordered_list":
+            list_node = create_list_block(block, ordered=True)
+            parent_node.children.append(list_node)
         # Add the block node to the parent
-        parent.children.append(block_node)
+        parent_node.children.append(block_node)
     
-    return parent
+    return parent_node
