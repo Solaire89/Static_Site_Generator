@@ -6,8 +6,7 @@ class HTMLNode:
         self.props = props
 
     def to_html(self):
-        return f"<{self.tag}>{self.value}</{self.tag}>"
-        # raise NotImplementedError
+        raise NotImplementedError("to_html method not implemented")
     
     def props_to_html(self):
         if self.props is None:
@@ -15,4 +14,4 @@ class HTMLNode:
         return "".join(f' {key}="{value}"' for key, value in self.props.items())
     
     def __repr__(self):
-        return f"HTMLNode({self.tag}, {self.value}, {self.children}, {self.props})"
+        return f"ParentNode({self.tag}, {self.value}, {self.children}, {self.props})"

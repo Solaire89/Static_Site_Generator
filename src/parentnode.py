@@ -12,6 +12,7 @@ class ParentNode(HTMLNode):
     # Start with opening tag (don't forget props if they exist!)
         html = f"<{self.tag}{self.props_to_html()}>"
     # Add each child's HTML (this is where recursion happens)
+        child_html = ""
         for child in self.children:
         # Here we call to_html() on each child
             child_html = child.to_html()
@@ -19,5 +20,7 @@ class ParentNode(HTMLNode):
             html += child_html
         # Add closing tag
         html += f"</{self.tag}>"
-    
         return html
+    
+    def __repr__(self):
+        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"

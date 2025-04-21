@@ -18,8 +18,10 @@ class BlockType(Enum):
 """
 
 def block_to_block_type(block):
+
+    lines = block.split('\n')
     # Check if it's a code block
-    if block.startswith('```') and block.endswith('```'):
+    if len(lines) >= 1 and lines[0].startswith("```") and lines[-1].startswith("```"):
         return BlockType.CODE
     # Check if it's a heading
     elif block.startswith('#'):
@@ -37,7 +39,7 @@ def block_to_block_type(block):
             return BlockType.HEADING
         
     # Check if it's a quote block
-    lines = block.split('\n')
+    
     if all(line.startswith('>') for line in lines):
         return BlockType.QUOTE
     

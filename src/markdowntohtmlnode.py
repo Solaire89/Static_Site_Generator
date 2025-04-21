@@ -1,7 +1,8 @@
 import re
+from enum import Enum
 from markdowntoblocks import markdown_to_blocks
-from blocktoblocktype import block_to_block_type
-from textnode import TextNode, text_node_to_html_node
+from blocktoblocktype import block_to_block_type, BlockType
+from textnode import TextNode, TextType, text_node_to_html_node
 from splitnodesdelimiter import split_nodes_delimiter
 from htmlnode import HTMLNode
 
@@ -22,17 +23,17 @@ def create_paragraph_node(block):
     return block_node
         
 
-def create_heading_node(block):
+def create_heading_block(block):
 
     # Counting the number of #'s in the header
     match = re.match(r"^([#]+)", block)
     header_markers = len(match.group(1))
 
     # Splitting the header markers from the content
-    _, text_content = block.split(" ", 1) # Discard markers and focus on content
-    
+    text_content = block.lstrip('#').lstrip() # Discard markers and focus on content
+    children = text_to_children(text_content)
     # Creating the node
-    block_node = HTMLNode(f"h{header_markers}", text_content, None, [])
+    block_node = HTMLNode(f"h{header_markers}", None, children, None)
     return block_node
 
 # Not for inline processing
@@ -41,10 +42,11 @@ def create_code_block(block):
     content = block.strip("`")
 
     # Create a child TextNode from the raw content (no inline parsing)
-    child_node = TextNode(content, "code_text")
+    child_node = TextNode(content, TextType.CODE_TEXT)
+    html_node = text_node_to_html_node(child_node)
 
     # Return an HTMLNode for `<pre><code>` with the TextNode as its child
-    code_node = HTMLNode("code", None, [child_node], None)  # <code> node contains the TextNode
+    code_node = HTMLNode("code", None, [html_node], None)  # <code> node contains the TextNode
     pre_node = HTMLNode("pre", None, [code_node], None)    # <pre> node contains the <code>
     return pre_node
 
@@ -68,7 +70,8 @@ def create_list_block(block, ordered=False):
         else:    
             continue  # If no valid list marker, skip this line
 
-        li_node = HTMLNode("li", children=[HTMLNode("text", content)])
+        children = text_to_children(content)
+        li_node = HTMLNode("li", None, children, None)
         li_nodes.append(li_node)
 
     # We're taking care of the logic of whether a list is ordered or 
@@ -101,17 +104,17 @@ def create_quote_block(block):
 # ----- Inline Text Processing Functions -----
 def text_to_children(text):
     # Start with a single text node containing all the text
-    nodes = [TextNode(text, "text")]
+    nodes = [TextNode(text, TextType.TEXT)]
     
     # Split by each inline delimiter and convert to appropriate TextNode types
     # For example, bold markdown
-    nodes = split_nodes_delimiter(nodes, "**", "bold")
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
     
     # For italic markdown
-    nodes = split_nodes_delimiter(nodes, "_", "italic")
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
     
     # For code markdown
-    nodes = split_nodes_delimiter(nodes, "`", "code")
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE_TEXT)
     
     # Convert each TextNode to an HTMLNode
     html_nodes = []
@@ -124,30 +127,43 @@ def text_to_children(text):
 # ----- Main Conversion Function -----
 
 def markdown_to_html_node(markdown):
+
+    parent_node = HTMLNode("div", None, [], None)
     # Extract the blocks from the markdown
     blocks = markdown_to_blocks(markdown)
+    print(f"Number of blocks: {len(blocks)}")
+    for block in blocks:
+        print(f"Block: {block}")
     
-    parent_node = HTMLNode("div", None, None, [])
     # Loop through each block to create HTML nodes
     for block in blocks:
         # Establishing what type of block each blocks are
         block_type = block_to_block_type(block)
+        
 
         # Create appropriate HTML node based on block_type
         # For example:
-        if block_type == "paragraph":
+        if block_type == BlockType.PARAGRAPH:
             block_node = create_paragraph_node(block)
-        elif block_type == "code":
+            parent_node.children.append(block_node)
+        elif block_type == BlockType.CODE:
             block_node = create_code_block(block)
-        elif block_type == "quote":
+            parent_node.children.append(block_node)
+        elif block_type == BlockType.QUOTE:
             block_node = create_quote_block(block)
-        elif block_type == "unordered_list":
+            parent_node.children.append(block_node)
+        elif block_type == BlockType.UNORDERED_LIST:
             list_node = create_list_block(block, ordered=False)
             parent_node.children.append(list_node)
-        elif block_type == "ordered_list":
+        elif block_type == BlockType.ORDERED_LIST:
             list_node = create_list_block(block, ordered=True)
             parent_node.children.append(list_node)
-        # Add the block node to the parent
-        parent_node.children.append(block_node)
-    
+        elif block_type == BlockType.HEADING:
+            block_node = create_heading_block(block)
+            parent_node.children.append(block_node)
+        print(f"Block type: {block_type}")
+    print(f"Parent node: {parent_node}")
+    print(f"Children count: {len(parent_node.children)}")
+    for child in parent_node.children:
+        print(f"Child: {child}, type: {type(child)}")
     return parent_node

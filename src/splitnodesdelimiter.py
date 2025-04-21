@@ -24,11 +24,6 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             # No closing delimiter, handle error
             raise Exception(f"No closing delimiter '{delimiter}' found")
         
-        # Now you can create three nodes:
-        # 1. Text before the first delimiter
-        # 2. Text between delimiters (with the specified text_type)
-        # 3. Text after the second delimiter
-        
         # Extract the three parts
         before_text = text[:start_index]
         delimited_text = text[start_index + len(delimiter):end_index]
@@ -38,11 +33,14 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         if before_text:
             new_nodes.append(TextNode(before_text, TextType.TEXT))
         
+        # Create the delimited node with the specified text_type
         new_nodes.append(TextNode(delimited_text, text_type))
         
+        # Process any remaining text as a new node with TEXT type
         if after_text:
-            # This might contain more delimiters! 
-            # We should process it further
-            new_nodes.extend(split_nodes_delimiter([TextNode(after_text, TextType.TEXT)], delimiter, text_type))
+            # This might contain more delimiters!
+            # We should process it further with the original delimiter and text_type
+            remaining_nodes = split_nodes_delimiter([TextNode(after_text, TextType.TEXT)], delimiter, text_type)
+            new_nodes.extend(remaining_nodes)
         
     return new_nodes
