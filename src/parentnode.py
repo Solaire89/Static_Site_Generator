@@ -14,10 +14,8 @@ class ParentNode(HTMLNode):
     # Add each child's HTML (this is where recursion happens)
         child_html = ""
         for child in self.children:
-        # Here we call to_html() on each child
-            child_html = child.to_html()
-        # And add that result to our parent HTML string
-            html += child_html
+            # Add each child's HTML to the parent
+            html += child.to_html()
         # Add closing tag
         html += f"</{self.tag}>"
         return html

@@ -18,6 +18,8 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
 
         node = markdown_to_html_node(md)
         html = node.to_html()
+        print(repr(html))  # Your output
+        print(repr("<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>"))  # Expected output
         self.assertEqual(
             html,
             "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",

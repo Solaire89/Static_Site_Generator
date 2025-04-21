@@ -1,10 +1,10 @@
 import re
-from enum import Enum
 from markdowntoblocks import markdown_to_blocks
 from blocktoblocktype import block_to_block_type, BlockType
 from textnode import TextNode, TextType, text_node_to_html_node
 from splitnodesdelimiter import split_nodes_delimiter
-from htmlnode import HTMLNode
+from leafnode import LeafNode
+from parentnode import ParentNode
 
 
 
@@ -13,14 +13,14 @@ from htmlnode import HTMLNode
 # ----- Block Processing Functions -----
 def create_paragraph_node(block):
 
-    # Create a paragraph node
-    block_node = HTMLNode("p", None, None, [])
+    # Replace newlines with spaces for paragraph text
+    text = block.replace("\n", " ").strip()
     
-    # Process inline markdown and add children
-    # Clear whitespace of the block
-    block_node.children = text_to_children(block.strip())
-
-    return block_node
+    # Create children nodes from the text (with inline markdown parsing)
+    children = text_to_children(text)
+    
+    # Create the paragraph node
+    return ParentNode("p", children)
         
 
 def create_heading_block(block):
@@ -33,21 +33,33 @@ def create_heading_block(block):
     text_content = block.lstrip('#').lstrip() # Discard markers and focus on content
     children = text_to_children(text_content)
     # Creating the node
-    block_node = HTMLNode(f"h{header_markers}", None, children, None)
+    block_node = ParentNode(f"h{header_markers}", children)
     return block_node
 
 # Not for inline processing
 def create_code_block(block):
-    # Remove the surrounding backticks (```)
-    content = block.strip("`")
+    ## Remove the triple backticks and get the content
+    lines = block.split("\n")
+    
+    # Skip the first and last line (which contain the ```) 
+    content_lines = lines[1:-1]
+    
+    # Join with newlines and ensure a trailing newline
+    content = "\n".join(content_lines)
+
+    # Ensure content ends with exactly one newline
+    if not content.endswith("\n"):
+        content += "\n"
+    elif content.endswith("\n\n"):  # Avoid double newlines
+        content = content[:-1]
 
     # Create a child TextNode from the raw content (no inline parsing)
-    child_node = TextNode(content, TextType.CODE_TEXT)
+    child_node = TextNode(content, TextType.TEXT)
     html_node = text_node_to_html_node(child_node)
 
     # Return an HTMLNode for `<pre><code>` with the TextNode as its child
-    code_node = HTMLNode("code", None, [html_node], None)  # <code> node contains the TextNode
-    pre_node = HTMLNode("pre", None, [code_node], None)    # <pre> node contains the <code>
+    code_node = ParentNode("code", [html_node])  # <code> node contains the TextNode
+    pre_node = ParentNode("pre", [code_node])    # <pre> node contains the <code>
     return pre_node
 
 def create_list_block(block, ordered=False):
@@ -71,13 +83,13 @@ def create_list_block(block, ordered=False):
             continue  # If no valid list marker, skip this line
 
         children = text_to_children(content)
-        li_node = HTMLNode("li", None, children, None)
+        li_node = ParentNode("li", children)
         li_nodes.append(li_node)
 
     # We're taking care of the logic of whether a list is ordered or 
     # unordered in the main markdown_to_HTML_node function.
     parent_tag = "ol" if ordered else "ul"
-    list_node = HTMLNode(parent_tag, children=li_nodes)
+    list_node = ParentNode(parent_tag, children=li_nodes)
     return list_node
 
 def create_quote_block(block):
@@ -98,7 +110,7 @@ def create_quote_block(block):
     children = text_to_children(content)
     
     # Create the blockquote node
-    return HTMLNode("blockquote", None, children, None)
+    return ParentNode("blockquote", children)
 
 
 # ----- Inline Text Processing Functions -----
@@ -128,13 +140,9 @@ def text_to_children(text):
 
 def markdown_to_html_node(markdown):
 
-    parent_node = HTMLNode("div", None, [], None)
+    parent_node = ParentNode("div", [])
     # Extract the blocks from the markdown
     blocks = markdown_to_blocks(markdown)
-    print(f"Number of blocks: {len(blocks)}")
-    for block in blocks:
-        print(f"Block: {block}")
-    
     # Loop through each block to create HTML nodes
     for block in blocks:
         # Establishing what type of block each blocks are
@@ -161,9 +169,4 @@ def markdown_to_html_node(markdown):
         elif block_type == BlockType.HEADING:
             block_node = create_heading_block(block)
             parent_node.children.append(block_node)
-        print(f"Block type: {block_type}")
-    print(f"Parent node: {parent_node}")
-    print(f"Children count: {len(parent_node.children)}")
-    for child in parent_node.children:
-        print(f"Child: {child}, type: {type(child)}")
     return parent_node
