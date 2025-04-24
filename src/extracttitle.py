@@ -1,6 +1,7 @@
 def extract_title(markdown):
-    if not "#" in markdown[0]:
-        raise Exception("No # detected")
-    else:
-        title = markdown.strip("# ")
-    return title
+    lines = markdown.split('\n')
+    for line in lines:
+        if line.startswith('# '):
+            title = line[2:].strip()
+            return title
+    raise Exception("No header found.")
