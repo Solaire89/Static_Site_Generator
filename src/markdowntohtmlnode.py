@@ -3,6 +3,8 @@ from markdowntoblocks import markdown_to_blocks
 from blocktoblocktype import block_to_block_type, BlockType
 from textnode import TextNode, TextType, text_node_to_html_node
 from splitnodesdelimiter import split_nodes_delimiter
+from splitnodeslink import split_nodes_link
+from splitnodesimage import split_nodes_image
 from leafnode import LeafNode
 from parentnode import ParentNode
 
@@ -127,6 +129,10 @@ def text_to_children(text):
     
     # For code markdown
     nodes = split_nodes_delimiter(nodes, "`", TextType.CODE_TEXT)
+
+    # For links and images
+    nodes = split_nodes_link(nodes)
+    nodes = split_nodes_image(nodes)
     
     # Convert each TextNode to an HTMLNode
     html_nodes = []
