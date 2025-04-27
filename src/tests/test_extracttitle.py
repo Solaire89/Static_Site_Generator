@@ -20,3 +20,7 @@ class TestExtractMarkdown(unittest.TestCase):
     def test_character_at_end(self):
         with self.assertRaises(Exception):
             extract_title("Hello! #")
+
+    def test_two_characters_at_beginning(self):
+        with self.assertRaises(Exception):
+            extract_title("## Hello!")
