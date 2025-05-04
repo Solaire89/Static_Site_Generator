@@ -2,7 +2,7 @@ import os
 from markdowntohtmlnode import markdown_to_html_node
 from extracttitle import extract_title
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     # Storing the contents of the from_path to the read_from variable
     with open(from_path, 'r') as file:
@@ -12,7 +12,7 @@ def generate_page(from_path, template_path, dest_path):
         read_template = template.read()
     created_html_node = markdown_to_html_node(read_from).to_html()
     title = extract_title(read_from)
-    modified_template = read_template.replace("{{ Title }}", title).replace("{{ Content }}", created_html_node)
+    modified_template = read_template.replace("{{ Title }}", title).replace("{{ Content }}", created_html_node).replace('href="/', 'href="' + base_path).replace('src="/', 'src="' + base_path)
     # Write the content to the dest_path
     dir_path = os.path.dirname(dest_path)
     if dir_path:  # If there is a directory component

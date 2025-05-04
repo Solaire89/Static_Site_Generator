@@ -2,7 +2,7 @@ import os
 from markdowntohtmlnode import markdown_to_html_node
 from extracttitle import extract_title
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, base_path):
     # Get all entries in the content directory
     entries = os.listdir(dir_path_content)
     
@@ -32,8 +32,10 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 with open(template_path, 'r') as f:
                     template = f.read()
                 
+                # Extracting the title
+                title = extract_title(markdown_content)
                 # You'd need to replace a placeholder in the template with the HTML content
-                final_html = template.replace("{{ Content }}", html_node.to_html())
+                final_html = template.replace("{{ Title }}", title).replace("{{ Content }}", html_node.to_html()).replace('href="/', 'href="' + base_path).replace('src="/', 'src="' + base_path)
                 
                 # Create directories if they don't exist
                 os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
@@ -50,4 +52,4 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 os.makedirs(sub_dest_dir)
             
             # Recurse into subdirectory
-            generate_pages_recursive(entry_path, template_path, sub_dest_dir)
+            generate_pages_recursive(entry_path, template_path, sub_dest_dir, base_path)
