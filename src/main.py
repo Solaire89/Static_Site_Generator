@@ -17,7 +17,7 @@ def main():
     os.makedirs("docs")
     
     # Copy static files
-    copy_static("static", "public")
+    copy_static("static", "docs")
     print("Copying static files to public directory...")
     
     # Generate all pages recursively
