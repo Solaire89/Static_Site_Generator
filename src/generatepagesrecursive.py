@@ -35,8 +35,20 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
                 # Extracting the title
                 title = extract_title(markdown_content)
                 # You'd need to replace a placeholder in the template with the HTML content
-                final_html = template.replace("{{ Title }}", title).replace("{{ Content }}", html_node.to_html()).replace('href="/', 'href="' + base_path).replace('src="/', 'src="' + base_path)
-                
+                final_html = (template.replace("{{ Title }}", title)
+                              .replace("{{ Content }}", html_node.to_html()))
+
+                # Right before you do path replacements
+                print(f"Before replacements: {'href=\"/index.css\"' in content}")
+                print(f"Base path being used: {base_path}")
+
+                # Your path replacement code here
+                content = (content.replace('href="/', 'href="' + base_path)
+                              .replace('src="/', 'src="' + base_path))
+
+                # After replacements
+                print(f"After replacements: {'href=\"/index.css\"' in content}")
+                print(f"New content contains: {'href=\"' + base_path + 'index.css\"' in content}")
                 # Create directories if they don't exist
                 os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
                 
