@@ -34,25 +34,28 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
                 
                 # Extracting the title
                 title = extract_title(markdown_content)
-
-                # Debugging BEFORE any replacements
-                """print(f"BEFORE replacements, does html_content contain double path? {'/Static_Site_Generator/Static_Site_Generator/' in html_content}")
-                if '/Static_Site_Generator/Static_Site_Generator/' in html_content:
-                    print("Double path found in HTML content BEFORE template replacements!")"""
-                print(f"Replacing 'href=\"/' with 'href=\"{base_path}'")
-                print(f"Replacing 'src=\"/' with 'src=\"{base_path}'")
     
 
                 html_content = html_node.to_html()
                 html_content = html_content.replace('src="/images/', f'src="{base_path}images/')
+                
+
                 # You'd need to replace a placeholder in the template with the HTML content
                 final_html = (template.replace("{{ Title }}", title)
                               .replace("{{ Content }}", html_content))
+
+                final_html = (final_html
+                                .replace('href="/', f'href="{base_path}')
+                                .replace('src="/', f'src="{base_path}')
+                                .replace("href='/", f"href='{base_path}")  # Single quotes
+                                .replace("src='/", f"src='{base_path}")    # Single quotes
+                                .replace('href=/', f'href={base_path}')    # No quotes
+                                .replace('src=/', f'src={base_path}')      # No quotes
+                                .replace('href="https://solaire89.github.io/"', f'href="{base_path}"'))  # Hard-coded full URL
                 
                 # Add this after your other replacements
                 final_html = final_html.replace(f'/Static_Site_Generator/Static_Site_Generator/', '/Static_Site_Generator/')
                 
-                print(f"Sample of final HTML: {final_html[:200]}...")  # Show first 200 chars
                 
                 # Create directories if they don't exist
                 os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
@@ -60,11 +63,6 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
                 # Special case for Tolkien image
                 final_html = final_html.replace('src="/images/tolkien.png"', f'src="{base_path}images/tolkien.png"')
                 
-                 # After you've generated your HTML content but before writing to file:
-                print(f"Writing {dest_file_path}")
-                print(f"Content contains '/images/tolkien.png': {'/images/tolkien.png' in final_html}")
-                print(f"Content contains '{base_path}images/tolkien.png': {f'{base_path}images/tolkien.png' in final_html}")
-                print(f"Using base_path: '{base_path}'")
 
                 # Write to destination file
                 with open(dest_file_path, 'w') as f:
