@@ -34,15 +34,27 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
                 
                 # Extracting the title
                 title = extract_title(markdown_content)
+
+                html_content = html_node.to_html()
+                html_content = html_content.replace('src="/images/', f'src="{base_path}images/')
                 # You'd need to replace a placeholder in the template with the HTML content
                 final_html = (template.replace("{{ Title }}", title)
-                              .replace("{{ Content }}", html_node.to_html())
+                              .replace("{{ Content }}", html_content)
                               .replace('href="/', f'href="{base_path}')
                               .replace('src="/', f'src="{base_path}'))
                 
                 # Create directories if they don't exist
                 os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
+
+                # Special case for Tolkien image
+                final_html = final_html.replace('src="/images/tolkien.png"', f'src="{base_path}images/tolkien.png"')
                 
+                 # After you've generated your HTML content but before writing to file:
+                print(f"Writing {dest_file_path}")
+                print(f"Content contains '/images/tolkien.png': {'/images/tolkien.png' in final_html}")
+                print(f"Content contains '{base_path}images/tolkien.png': {f'{base_path}images/tolkien.png' in final_html}")
+                print(f"Using base_path: '{base_path}'")
+
                 # Write to destination file
                 with open(dest_file_path, 'w') as f:
                     f.write(final_html)
