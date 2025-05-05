@@ -35,6 +35,10 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
                 # Extracting the title
                 title = extract_title(markdown_content)
 
+                # Debugging BEFORE any replacements
+                """print(f"BEFORE replacements, does html_content contain double path? {'/Static_Site_Generator/Static_Site_Generator/' in html_content}")
+                if '/Static_Site_Generator/Static_Site_Generator/' in html_content:
+                    print("Double path found in HTML content BEFORE template replacements!")"""
                 print(f"Replacing 'href=\"/' with 'href=\"{base_path}'")
                 print(f"Replacing 'src=\"/' with 'src=\"{base_path}'")
     
@@ -43,9 +47,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
                 html_content = html_content.replace('src="/images/', f'src="{base_path}images/')
                 # You'd need to replace a placeholder in the template with the HTML content
                 final_html = (template.replace("{{ Title }}", title)
-                              .replace("{{ Content }}", html_content)
-                              .replace('href="/', f'href="{base_path}')
-                              .replace('src="/', f'src="{base_path}'))
+                              .replace("{{ Content }}", html_content))
                 
                 # Add this after your other replacements
                 final_html = final_html.replace(f'/Static_Site_Generator/Static_Site_Generator/', '/Static_Site_Generator/')
